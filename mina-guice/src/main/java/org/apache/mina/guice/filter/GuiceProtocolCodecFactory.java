@@ -10,6 +10,9 @@ import org.apache.mina.filter.codec.ProtocolEncoder;
 
 import com.google.inject.Injector;
 
+/**
+ * Defers to the {@link Injector} to get the instances of {@link ProtocolEncoder} and {@link ProtocolDecoder}.
+ */
 @Singleton
 public class GuiceProtocolCodecFactory implements ProtocolCodecFactory {
 

@@ -7,9 +7,10 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.ProtocolDecoder;
 
 import com.google.inject.Injector;
+import org.apache.mina.filter.codec.ProtocolEncoder;
 
 /**
- * Defers to the {@link Injector} to get the {@link ProtcocolEndoer} and the
+ * Defers to the {@link Injector} to get the {@link ProtocolEncoder} and the
  * {@link ProtocolDecoder} instances. 
  * 
  * @author patricktwohig

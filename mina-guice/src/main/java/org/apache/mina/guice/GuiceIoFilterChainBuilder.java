@@ -17,20 +17,20 @@ import com.google.inject.Provider;
  * build the {@link IoFilterChain} based on Guice's configured bindings. For
  * each invocation of the method
  * {@link GuiceIoFilterChainBuilder#buildFilterChain(IoFilterChain)} each
- * {@link Provider} will called exactly once to build the chain. Filters are
- * inserted in the filter chain in the order in which they are bound and are
- * named according to the usage of the {@link Named} annotation.
+ * {@link Provider} will called exactly once to build the chain.
+ *
+ * Filters are inserted in the filter chain in the order in which they are bound and are
+ * named according to the value passed to {@link FilterBinding#named(String)}.
  * 
  * This does not actually insert filters directly.  Rather this inserts
  * the filters into a separate chain and then uses that to dispatch the Guice 
  * managed filters.
  * 
- * @author patricktwohig
+ * @author "Patrick Twohig" patrick@namazustudios.com
  * 
  */
 @Singleton
 class GuiceIoFilterChainBuilder implements IoFilterChainBuilder {
-
 
 	@Inject
 	private	Map<String, Provider<IoFilter>> filters;

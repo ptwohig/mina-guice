@@ -13,7 +13,7 @@ import com.google.inject.TypeLiteral;
  * Generally, you shouldn't use this directly.  It's useful for those who
  * wish to extend the MINA Guice bindings for other purposes.
  * 
- * @author patricktwohig
+ * @author "Patrick Twohig" patrick@namazustudios.com
  *
  */
 class TypeUtil {

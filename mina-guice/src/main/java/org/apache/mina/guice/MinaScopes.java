@@ -7,11 +7,9 @@ import com.google.inject.Provider;
 import com.google.inject.Scope;
 
 /**
- * A set of scopes for Mina.  Currenly only the session scope exists.  Unless 
- * otherwise specified a Key's toString is used to identify the session object
- * injected by Guice. 
+ * A set of scopes for Mina.
  * 
- * @author patricktwohig
+ * @author "Patrick Twohig" patrick@namazustudios.com
  *
  */
 public class MinaScopes {

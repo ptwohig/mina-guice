@@ -4,10 +4,15 @@ import org.apache.mina.core.session.IoSession;
 
 import com.google.inject.Provider;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
 /**
- * Provides the session object.
+ * Provides the session object kept in an instance of {@link ThreadLocal}.  This makes it possible
+ * to inject the current {@link IoSession}.
  * 
- * @author patricktwohig
+ * @author "Patrick Twohig" patrick@namazustudios.com
  *
  */
 class MinaSessionProvider implements Provider<IoSession> {
@@ -28,7 +33,7 @@ class MinaSessionProvider implements Provider<IoSession> {
 
 	}
 
-	static void setSession(final IoSession session) {
+    static void setSession(final IoSession session) {
 
 		if (session == null) throw new IllegalArgumentException("Session cannot be null.");
 

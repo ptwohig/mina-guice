@@ -34,9 +34,10 @@ import com.google.inject.spi.TypeListener;
 
 /**
  * Configures MINA to integrate with Guice.  This sets up the basic Guice bindings
- * for MINA as well as provides some extra options to build the module. 
+ * for MINA as well as provides some extra options to configure the module.  This
+ * provides support for scoping of the {@link IoSession} as well.
  * 
- * @author patricktwohig
+ * @author "Patrick Twohig" patrick@namazustudios.com
  * 
  */
 public abstract class MinaModule extends AbstractModule {
@@ -182,8 +183,8 @@ public abstract class MinaModule extends AbstractModule {
 	}
 
 	/**
-	 * Binds a filter in the filter chain.  You can specify the name of the
-	 * filter.
+	 * Binds a filter in the filter chain.  You can specify the name of the filter to be handed to
+     * to the {@link IoFilterChain#addLast(String, IoFilter)} method
 	 * 
 	 * @return a FilterBinding 
 	 * 
@@ -214,7 +215,7 @@ public abstract class MinaModule extends AbstractModule {
 
 	/**
 	 * Binds the {@link GuiceProtocolCodecFactory} which will use Guice to
-	 * install the various protol factories.
+	 * install the various protocol factories.
 	 * 
 	 * @return and instance of {@ AnnotatedBindingBuilder<? estends ProtocolCodecFactory>}
 	 */
@@ -225,7 +226,6 @@ public abstract class MinaModule extends AbstractModule {
 	/**
 	 * Configures MINA using Guice. In this method you may bind all of the
 	 * filters and other types specific to MINA.
-	 * 
 	 */
 	protected abstract void configureMINA();
 
@@ -268,9 +268,10 @@ public abstract class MinaModule extends AbstractModule {
 			try {
 				MinaSessionProvider.setSession(session);
 				return invocation.proceed();
-			}finally {
+			} finally {
 				MinaSessionProvider.freeSession(session);
 			}
+
 		}
 
 	}

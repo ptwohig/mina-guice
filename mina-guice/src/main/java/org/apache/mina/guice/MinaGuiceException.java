@@ -15,7 +15,7 @@ import com.google.common.collect.ImmutableList;
  * when logging.  Additionally, this provides access to the underlying list
  * of causes as an immutable list.
  * 
- * @author patricktwohig
+ * @author "Patrick Twohig" patrick@namazustudios.com
  *
  */
 public class MinaGuiceException extends RuntimeException {
