@@ -11,8 +11,6 @@
     <packaging>jar</packaging>
     <version>2.0.9</version>
 
-
-
     <dependencies>
 
 		<dependency>

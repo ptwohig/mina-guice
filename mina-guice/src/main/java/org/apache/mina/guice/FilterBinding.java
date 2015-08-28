@@ -22,6 +22,6 @@ public interface FilterBinding {
 	 * @param name
 	 * @return
 	 */
-	public LinkedBindingBuilder<IoFilter> named(final String name);
+	LinkedBindingBuilder<IoFilter> named(final String name);
 
 }

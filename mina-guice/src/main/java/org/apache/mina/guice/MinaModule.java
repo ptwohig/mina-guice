@@ -33,7 +33,7 @@ import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
 
 /**
- * Configures MINA to integrate with Guice.  This sets up the basic Guice binds
+ * Configures MINA to integrate with Guice.  This sets up the basic Guice bindings
  * for MINA as well as provides some extra options to build the module. 
  * 
  * @author patricktwohig
