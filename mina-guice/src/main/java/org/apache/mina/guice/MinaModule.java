@@ -1,10 +1,11 @@
 package org.apache.mina.guice;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.util.*;
 
 import javax.inject.Provider;
 
+import com.google.inject.name.Names;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.mina.core.filterchain.IoFilter;
@@ -27,7 +28,6 @@ import com.google.inject.binder.ScopedBindingBuilder;
 import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.matcher.Matchers;
-import com.google.inject.multibindings.MapBinder;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
@@ -41,6 +41,8 @@ import com.google.inject.spi.TypeListener;
  * 
  */
 public abstract class MinaModule extends AbstractModule {
+
+    public static final String ORIGINAL_FILTER_SEQUENCE = "org.apache.mina.guice.MinaModule.ORIGINAL_FILTER_SEQUENCE";
 
 	private static final Matcher<Method> IO_FILTER_EXCEPTION_CAUGHT = 
 		method("exceptionCaught", NextFilter.class, IoSession.class, Throwable.class); 
@@ -113,7 +115,7 @@ public abstract class MinaModule extends AbstractModule {
 
 	};
 
-	private MapBinder<String, IoFilter> filters;
+    private final LinkedList<String> filterNameList = new LinkedList<>();
 
 	/**
 	 * Sets up the basic MINA Guice integration.  This will bind the basic 
@@ -127,8 +129,10 @@ public abstract class MinaModule extends AbstractModule {
 	@Override
 	protected final void configure() {
 
-		filters = MapBinder.newMapBinder(binder(), String.class, IoFilter.class);
-		
+        binder().bind(new TypeLiteral<List<String>>(){})
+                .annotatedWith(Names.named(ORIGINAL_FILTER_SEQUENCE))
+                .toInstance(filterNameList);
+
 		binder().bindListener(IO_ACCEPTOR_MATCHER, new TypeListener() {
 
 			@Override
@@ -186,19 +190,82 @@ public abstract class MinaModule extends AbstractModule {
 	 * Binds a filter in the filter chain.  You can specify the name of the filter to be handed to
      * to the {@link IoFilterChain#addLast(String, IoFilter)} method
 	 * 
-	 * @return a FilterBinding 
+	 * @return a FilterNameBindingBuilder
 	 * 
 	 */
-	protected final FilterBinding bindFilter() {
-		return new FilterBinding() {
-			
-			@Override
-			public LinkedBindingBuilder<IoFilter> named(final String name) {
-				return filters.addBinding(name);
-			}
-
-		};
+	protected final FilterNameBindingBuilder bindFilter() {
+		return new FilterNameBindingBuilder() {
+            @Override
+            public FilterSequenceBindingBuilder named(final String filterName) {
+                return bindFilterNamed(filterName);
+            }
+        };
 	}
+
+    private final FilterSequenceBindingBuilder bindFilterNamed(final String filterName) {
+        return new FilterSequenceBindingBuilder() {
+
+            @Override
+            public LinkedBindingBuilder<IoFilter> atBeginningOfChain() {
+
+                final int index = filterNameList.indexOf(filterName);
+
+                if (index >= 0) {
+                    throw new IllegalArgumentException("Filter named \"" + filterName + "\" is already bound.");
+                }
+
+                filterNameList.addFirst(filterName);
+
+                return binder().bind(IoFilter.class).annotatedWith(Names.named(filterName));
+
+            }
+
+            @Override
+            public LinkedBindingBuilder<IoFilter> after(String filterName) {
+
+                final int index = filterNameList.indexOf(filterName);
+
+                if (index < 0) {
+                    throw new IllegalArgumentException("Filter named \"" + filterName + "\" is not bound.");
+                }
+
+                filterNameList.add(Math.min(index + 1, filterNameList.size()), filterName);
+
+                return binder().bind(IoFilter.class).annotatedWith(Names.named(filterName));
+
+            }
+
+            @Override
+            public LinkedBindingBuilder<IoFilter> before(String filterName) {
+
+                final int index = filterNameList.indexOf(filterName);
+
+                if (index < 0) {
+                    throw new IllegalArgumentException("Filter named \"" + filterName + "\" is not bound.");
+                }
+
+                filterNameList.add(index, filterName);
+
+                return binder().bind(IoFilter.class).annotatedWith(Names.named(filterName));
+            }
+
+            @Override
+            public LinkedBindingBuilder<IoFilter> atAndOfFilterChain() {
+
+                final int index = filterNameList.indexOf(filterName);
+
+                if (index >= 0) {
+                    throw new IllegalArgumentException("Filter named \"" + filterName + "\" is already bound.");
+                }
+
+                filterNameList.addLast(filterName);
+
+                return binder().bind(IoFilter.class).annotatedWith(Names.named(filterName));
+
+            }
+
+        };
+    }
 
 	/**
 	 * Automatically binds the {@link GuiceProtocolCodecFilter} to the context
@@ -208,12 +275,26 @@ public abstract class MinaModule extends AbstractModule {
 	 * @return an instance of {@link ScopedBindingBuilder}
 	 * 
 	 */
-	protected final ScopedBindingBuilder bindProtcolCodecFilter() {
-		final String name = GuiceProtocolCodecFilter.class.toString();
-		return bindFilter().named(name).to(GuiceProtocolCodecFilter.class);
+	protected final ScopedBindingBuilder bindProtocolCodecFilter() {
+        final String protocolFilterName = GuiceProtocolCodecFilter.class.toString();
+        return bindProtocolCodecFilter(protocolFilterName);
 	}
 
-	/**
+    /**
+     * Automatically binds the {@link GuiceProtocolCodecFilter} to the context
+     * configuration.  You may bind it yourself, or call it manually.  It is
+     * not strictly necessary to bind this, but it makes life easier.
+     *
+     * @param protocolFilterName the name of the protocol filter, if the default name is not acceptable
+     *
+     * @return an instance of {@link ScopedBindingBuilder}
+     *
+     */
+    protected final ScopedBindingBuilder bindProtocolCodecFilter(final String protocolFilterName) {
+        return bindFilter().named(protocolFilterName).atAndOfFilterChain();
+    }
+
+    /**
 	 * Binds the {@link GuiceProtocolCodecFactory} which will use Guice to
 	 * install the various protocol factories.
 	 * 

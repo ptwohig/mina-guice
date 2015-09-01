@@ -16,7 +16,6 @@
     <artifactId>mina-guice</artifactId>
     <packaging>jar</packaging>
 
-
     <dependencies>
 
 		<dependency>
@@ -29,12 +28,6 @@
 			<groupId>com.google.inject</groupId>
 	    	<artifactId>guice</artifactId>
 	    	<version>3.0</version>
-		</dependency>
-
-		<dependency>
-    		<groupId>com.google.inject.extensions</groupId>
-    		<artifactId>guice-multibindings</artifactId>
-		    <version>3.0</version>
 		</dependency>
 
         <dependency>

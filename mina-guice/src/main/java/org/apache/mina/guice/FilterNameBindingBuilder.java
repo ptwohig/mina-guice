@@ -13,19 +13,20 @@ import org.apache.mina.core.filterchain.IoFilterChain;
  * @author "Patrick Twohig" patrick@namazustudios.com
  *
  */
-public interface FilterBinding {
+public interface FilterNameBindingBuilder {
 
 	/**
-	 * Indicates the name of the filter.  This is not to be confused
-	 * with using the {@link Named} annotation. The name is strictly
-	 * used within the context of the filter chain.
+	 * Indicates the name of the filter.  The filter will be bound using the {@link Named}
+	 * annotation with the given name.  The name will also be used to determine the name
+	 * of the filter when added to the {@link IoFilterChain}.
 	 *
 	 * @see {@link IoFilterChain#addLast(String, IoFilter)}
-	 * 
-	 * @param name the name, to be passed to {@link IoFilterChain#addLast(String, IoFilter)}
+	 * @see {@link Named#value()}
+	 *
+	 * @param name the name of the filter.
 	 *
 	 * @return an instance of {@link LinkedBindingBuilder}
 	 */
-	LinkedBindingBuilder<IoFilter> named(final String name);
+	FilterSequenceBindingBuilder named(final String name);
 
 }
