@@ -1,36 +1,36 @@
 package org.apache.mina.guice;
 
-import java.lang.reflect.Method;
-import java.util.*;
-
-import javax.inject.Provider;
-
-import com.google.inject.name.Names;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
-import org.apache.mina.core.filterchain.IoFilter;
-import org.apache.mina.core.filterchain.IoFilter.NextFilter;
-import org.apache.mina.core.filterchain.IoFilterChain;
-import org.apache.mina.core.service.IoAcceptor;
-import org.apache.mina.core.service.IoHandler;
-import org.apache.mina.core.session.IdleStatus;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.core.write.WriteRequest;
-import org.apache.mina.filter.codec.ProtocolCodecFactory;
-import org.apache.mina.guice.filter.GuiceProtocolCodecFactory;
-import org.apache.mina.guice.filter.GuiceProtocolCodecFilter;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
-import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
 import com.google.inject.binder.ScopedBindingBuilder;
 import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.matcher.Matchers;
+import com.google.inject.name.Names;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.mina.core.filterchain.IoFilter;
+import org.apache.mina.core.filterchain.IoFilter.NextFilter;
+import org.apache.mina.core.filterchain.IoFilterChain;
+import org.apache.mina.core.filterchain.IoFilterChainBuilder;
+import org.apache.mina.core.service.IoAcceptor;
+import org.apache.mina.core.service.IoHandler;
+import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.core.write.WriteRequest;
+import org.apache.mina.guice.filter.GuiceIoFilterChainBuilder;
+import org.apache.mina.guice.filter.InjectProtocolCodecFactory;
+import org.apache.mina.guice.filter.InjectProtocolCodecFilter;
+
+import javax.inject.Provider;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Configures MINA to integrate with Guice.  This sets up the basic Guice bindings
@@ -135,29 +135,26 @@ public abstract class MinaModule extends AbstractModule {
 
 		binder().bindListener(IO_ACCEPTOR_MATCHER, new TypeListener() {
 
-			@Override
-			public <I> void hear(TypeLiteral<I> type, TypeEncounter<I> encounter) {
+            @Override
+            public <I> void hear(TypeLiteral<I> type, TypeEncounter<I> encounter) {
 
-				final Provider<IoHandler> ioHandler = encounter.getProvider(IoHandler.class);
-				final Provider<GuiceIoFilterChainBuilder> guiceIoFilterChainBuilder = encounter.getProvider(GuiceIoFilterChainBuilder.class);
+                final Provider<IoHandler> ioHandler = encounter.getProvider(IoHandler.class);
+                final Provider<IoFilterChainBuilder> guiceIoFilterChainBuilder = encounter.getProvider(IoFilterChainBuilder.class);
 
-				encounter.register(new InjectionListener<I>() {
+                encounter.register(new InjectionListener<I>() {
 
-					@Override
-					public void afterInjection(I injectee) {
-						final IoAcceptor acceptor = (IoAcceptor) injectee;
-						acceptor.setHandler(ioHandler.get());
-						acceptor.setFilterChainBuilder(guiceIoFilterChainBuilder.get());
-					}
+                    @Override
+                    public void afterInjection(I injectee) {
+                        final IoAcceptor acceptor = (IoAcceptor) injectee;
+                        acceptor.setHandler(ioHandler.get());
+                        acceptor.setFilterChainBuilder(guiceIoFilterChainBuilder.get());
+                    }
 
-				});
+                });
 
-			}
+            }
 
-		});
-
-		binder().bind(GuiceIoFilterChainBuilder.class);
-		binder().bind(IoSession.class).toProvider(MinaSessionProvider.class);
+        });
 
 		binder().bindInterceptor(Matchers.subclassesOf(IoFilter.class), IO_FILTER_EXCEPTION_CAUGHT, new SessionScopeMethodInterceptor(1));
 		binder().bindInterceptor(Matchers.subclassesOf(IoFilter.class), IO_FILTER_FILTER_CLOSE, new SessionScopeMethodInterceptor(1));
@@ -267,21 +264,40 @@ public abstract class MinaModule extends AbstractModule {
         };
     }
 
-	/**
-	 * Automatically binds the {@link GuiceProtocolCodecFilter} to the context
-	 * configuration.  You may bind it yourself, or call it manually.  It is
-	 * not strictly necessary to bind this, but it makes life easier.
-	 * 
-	 * @return an instance of {@link ScopedBindingBuilder}
-	 * 
-	 */
-	protected final ScopedBindingBuilder bindProtocolCodecFilter() {
-        final String protocolFilterName = GuiceProtocolCodecFilter.class.toString();
-        return bindProtocolCodecFilter(protocolFilterName);
-	}
+    /**
+     * Binds the {@link IoFilterChainBuilder} to {@link GuiceIoFilterChainBuilder}.  It is
+     * not strictly necessary to bind this, but it makes life easier.
+     */
+    protected final void bindFilterChainBuilder() {
+        binder().bind(IoFilterChainBuilder.class).to(GuiceIoFilterChainBuilder.class);
+    }
 
     /**
-     * Automatically binds the {@link GuiceProtocolCodecFilter} to the context
+     * Binds the {@link InjectProtocolCodecFactory} which will use the IoC container to install the various protocol
+     * factories.
+     */
+    protected final void bindProtocolCodecFactory() {
+        binder().bind(InjectProtocolCodecFactory.class);
+    }
+
+    /**
+     * Automatically binds the {@link InjectProtocolCodecFilter} to the context
+     * configuration.  You may bind it yourself, or call it manually.  It is
+     * not strictly necessary to bind this, but it makes life easier.
+     *
+     * The default name is the result of calilng {@link Class#getName()} ()} on
+     * {@link InjectProtocolCodecFilter#getClass()}
+     *
+     * @return an instance of {@link ScopedBindingBuilder}
+     *
+     */
+    protected final FilterSequenceBindingBuilder bindProtocolCodecFilter() {
+        final String protocolFilterName = InjectProtocolCodecFilter.class.toString();
+        return bindProtocolCodecFilter(protocolFilterName);
+    }
+
+    /**
+     * Automatically binds the {@link InjectProtocolCodecFilter} to the context
      * configuration.  You may bind it yourself, or call it manually.  It is
      * not strictly necessary to bind this, but it makes life easier.
      *
@@ -290,21 +306,25 @@ public abstract class MinaModule extends AbstractModule {
      * @return an instance of {@link ScopedBindingBuilder}
      *
      */
-    protected final ScopedBindingBuilder bindProtocolCodecFilter(final String protocolFilterName) {
-        return bindFilter().named(protocolFilterName).atAndOfFilterChain();
+    protected final FilterSequenceBindingBuilder bindProtocolCodecFilter(final String protocolFilterName) {
+        return bindFilter().named(protocolFilterName);
     }
 
     /**
-	 * Binds the {@link GuiceProtocolCodecFactory} which will use Guice to
-	 * install the various protocol factories.
-	 * 
-	 * @return and instance of {@ AnnotatedBindingBuilder<? estends ProtocolCodecFactory>}
-	 */
-	protected final AnnotatedBindingBuilder<? extends ProtocolCodecFactory> bindProtocolCodecFactory() {
-		return binder().bind(GuiceProtocolCodecFactory.class);
-	}
+     * Binds the {@link IoSession} to the {@link IoSessionProvider}.
+     */
+    protected final void bindIoSession() {
+        binder().bind(IoSession.class).toProvider(IoSessionProvider.class);
+    }
 
-	/**
+    /**
+     * Binds the {@link IoSession} to the {@link IoSessionProxyProvider}.
+     */
+    protected final void bindIoSessionProxy() {
+        binder().bind(IoSession.class).toProvider(IoSessionProxyProvider.class);
+    }
+
+    /**
 	 * Configures MINA using Guice. In this method you may bind all of the
 	 * filters and other types specific to MINA.
 	 */
@@ -324,11 +344,12 @@ public abstract class MinaModule extends AbstractModule {
 			final IoSession session = (IoSession) invocation.getArguments()[index];
 
 			try {
-				MinaSessionProvider.setSession(session);
+				IoSessionProvider.setSession(session);
 				return invocation.proceed();
-			}finally {
-				MinaSessionProvider.freeSession(session);
+			} finally {
+				IoSessionProvider.freeSession(session);
 			}
+
 		}
 
 	}
@@ -347,10 +368,10 @@ public abstract class MinaModule extends AbstractModule {
 			final IoSession session = ((IoFilterChain) invocation.getArguments()[index]).getSession();
 
 			try {
-				MinaSessionProvider.setSession(session);
+				IoSessionProvider.setSession(session);
 				return invocation.proceed();
 			} finally {
-				MinaSessionProvider.freeSession(session);
+				IoSessionProvider.freeSession(session);
 			}
 
 		}

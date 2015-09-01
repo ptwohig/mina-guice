@@ -1,9 +1,9 @@
 package org.apache.mina.guice;
 
-import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
 import org.apache.mina.core.filterchain.IoFilter;
 import org.apache.mina.core.filterchain.IoFilterChain;
+import org.apache.mina.guice.filter.GuiceIoFilterChainBuilder;
 
 /**
  * Used to control the sequence of the filters as they are added to the

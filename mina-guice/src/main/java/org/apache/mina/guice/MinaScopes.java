@@ -27,7 +27,7 @@ public class MinaScopes {
 				@Override
 				public T get() {
 
-					final IoSession session = MinaSessionProvider.getSession();
+					final IoSession session = IoSessionProvider.getSession();
 
 					T obj = (T) session.getAttribute(key);
 					if (obj != null) return obj;

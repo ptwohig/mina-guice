@@ -17,11 +17,11 @@ import org.apache.mina.filter.codec.ProtocolEncoder;
  *
  */
 @Singleton
-public class GuiceProtocolCodecFilter extends ProtocolCodecFilter {
+public class InjectProtocolCodecFilter extends ProtocolCodecFilter {
 
 	@Inject
-	public GuiceProtocolCodecFilter(final Injector injector) {
-		super(injector.getInstance(GuiceProtocolCodecFactory.class));
+	public InjectProtocolCodecFilter(final InjectProtocolCodecFactory guiceProtocolCodecFactory) {
+		super(guiceProtocolCodecFactory);
 	}
 
 }

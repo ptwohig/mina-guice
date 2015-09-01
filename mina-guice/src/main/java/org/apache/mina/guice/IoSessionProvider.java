@@ -4,10 +4,6 @@ import org.apache.mina.core.session.IoSession;
 
 import com.google.inject.Provider;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-
 /**
  * Provides the session object kept in an instance of {@link ThreadLocal}.  This makes it possible
  * to inject the current {@link IoSession}.
@@ -15,18 +11,18 @@ import java.lang.reflect.Proxy;
  * @author "Patrick Twohig" patrick@namazustudios.com
  *
  */
-class MinaSessionProvider implements Provider<IoSession> {
+class IoSessionProvider implements Provider<IoSession> {
 
 	private static final ThreadLocal<IoSession> session = new ThreadLocal<IoSession>();
 
 	@Override
 	public IoSession get() {
-		return MinaSessionProvider.getSession();
+		return IoSessionProvider.getSession();
 	}
 
 	static IoSession getSession() {
 
-		final IoSession session = MinaSessionProvider.session.get();
+		final IoSession session = IoSessionProvider.session.get();
 		if (session == null) throw new IllegalStateException("Out of session scope.");
 
 		return session;
@@ -37,10 +33,10 @@ class MinaSessionProvider implements Provider<IoSession> {
 
 		if (session == null) throw new IllegalArgumentException("Session cannot be null.");
 
-		final IoSession tmp = MinaSessionProvider.session.get();
+		final IoSession tmp = IoSessionProvider.session.get();
 		if (tmp != null && !tmp.equals(session)) throw new IllegalStateException("Already in scope.");
 
-		MinaSessionProvider.session.set(session);
+		IoSessionProvider.session.set(session);
 
 	}
 
@@ -48,10 +44,10 @@ class MinaSessionProvider implements Provider<IoSession> {
 
 		if (session == null) throw new IllegalArgumentException("Session cannot be null.");
 
-		final IoSession tmp = MinaSessionProvider.session.get();
+		final IoSession tmp = IoSessionProvider.session.get();
 		if (tmp != null && !tmp.equals(session)) throw new IllegalStateException("Already in a different session's scope.");
 
-		MinaSessionProvider.session.set(null);
+		IoSessionProvider.session.set(null);
 
 	}
 

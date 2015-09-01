@@ -1,7 +1,6 @@
-package org.apache.mina.guice;
+package org.apache.mina.guice.filter;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -15,6 +14,8 @@ import org.apache.mina.core.filterchain.IoFilterChain;
 import org.apache.mina.core.filterchain.IoFilterChainBuilder;
 
 import com.google.inject.Provider;
+import org.apache.mina.guice.FilterNameBindingBuilder;
+import org.apache.mina.guice.MinaModule;
 
 /**
  * This type is automatically configured by the {@link MinaModule}. It will
@@ -25,16 +26,12 @@ import com.google.inject.Provider;
  *
  * Filters are inserted in the filter chain in the order in which they are bound and are
  * named according to the value passed to {@link FilterNameBindingBuilder#named(String)}.
- * 
- * This does not actually insert filters directly.  Rather this inserts
- * the filters into a separate chain and then uses that to dispatch the Guice 
- * managed filters.
- * 
+ *
  * @author "Patrick Twohig" patrick@namazustudios.com
  * 
  */
 @Singleton
-class GuiceIoFilterChainBuilder implements IoFilterChainBuilder {
+public class GuiceIoFilterChainBuilder implements IoFilterChainBuilder {
 
 	@Inject
 	private Injector injector;
