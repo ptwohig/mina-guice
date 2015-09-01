@@ -3,7 +3,6 @@ package org.apache.mina.guice;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.binder.LinkedBindingBuilder;
-import com.google.inject.binder.ScopedBindingBuilder;
 import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.matcher.Matchers;
@@ -24,7 +23,6 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.write.WriteRequest;
 import org.apache.mina.guice.filter.GuiceIoFilterChainBuilder;
 import org.apache.mina.guice.filter.InjectProtocolCodecFactory;
-import org.apache.mina.guice.filter.InjectProtocolCodecFilter;
 
 import javax.inject.Provider;
 import java.lang.reflect.Method;
