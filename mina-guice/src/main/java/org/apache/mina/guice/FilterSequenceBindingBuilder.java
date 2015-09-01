@@ -11,7 +11,7 @@ import org.apache.mina.guice.filter.GuiceIoFilterChainBuilder;
  *
  * Created by patricktwohig on 8/31/15.
  */
-public interface FilterSequenceBindingBuilder {
+public interface FilterSequenceBindingBuilder<FilterT extends IoFilter> {
 
     /**
      * Places the filter at the beginning such that when the {@link IoFilterChain} is built,
@@ -20,7 +20,7 @@ public interface FilterSequenceBindingBuilder {
      *
      * @return AnnotatedBindingBuilder see the EDSL examples at {@link com.google.inject.Binder}
      */
-    LinkedBindingBuilder<IoFilter> atBeginningOfChain();
+    LinkedBindingBuilder<FilterT> atBeginningOfChain();
 
     /**
      * Places the filter after the filter with the given mame.
@@ -30,7 +30,7 @@ public interface FilterSequenceBindingBuilder {
      * @throws IllegalArgumentException if the filter with the given name does not exist.
      *
      */
-    LinkedBindingBuilder<IoFilter> after(String filterName);
+    LinkedBindingBuilder<FilterT> after(String filterName);
 
     /**
      * Places the filter before the filter with the given name.
@@ -40,12 +40,12 @@ public interface FilterSequenceBindingBuilder {
      * @throws IllegalArgumentException if the filter with the given name does not exist.
      *
      */
-    LinkedBindingBuilder<IoFilter> before(String filterName);
+    LinkedBindingBuilder<FilterT> before(String filterName);
 
     /**
      * Places filter at the end of the chain after any previously defined filters.
      * @return AnnotatedBindingBuilder see the EDSL examples at {@link com.google.inject.Binder}
      */
-    LinkedBindingBuilder<IoFilter> atAndOfFilterChain();
+    LinkedBindingBuilder<FilterT> atAndOfFilterChain();
 
 }

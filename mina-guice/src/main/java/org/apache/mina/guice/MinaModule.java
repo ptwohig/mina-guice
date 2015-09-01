@@ -129,10 +129,6 @@ public abstract class MinaModule extends AbstractModule {
 	@Override
 	protected final void configure() {
 
-        binder().bind(new TypeLiteral<List<String>>(){})
-                .annotatedWith(Names.named(ORIGINAL_FILTER_SEQUENCE))
-                .toInstance(filterNameList);
-
 		binder().bindListener(IO_ACCEPTOR_MATCHER, new TypeListener() {
 
             @Override
@@ -181,7 +177,11 @@ public abstract class MinaModule extends AbstractModule {
 
 		configureMINA();
 
-	}
+        binder().bind(new TypeLiteral<List<String>>(){})
+                .annotatedWith(Names.named(ORIGINAL_FILTER_SEQUENCE))
+                .toInstance(filterNameList);
+
+    }
 
 	/**
 	 * Binds a filter in the filter chain.  You can specify the name of the filter to be handed to
@@ -203,7 +203,7 @@ public abstract class MinaModule extends AbstractModule {
         return new FilterSequenceBindingBuilder() {
 
             @Override
-            public LinkedBindingBuilder<IoFilter> atBeginningOfChain() {
+            public LinkedBindingBuilder<? extends IoFilter> atBeginningOfChain() {
 
                 final int index = filterNameList.indexOf(filterName);
 
@@ -218,7 +218,7 @@ public abstract class MinaModule extends AbstractModule {
             }
 
             @Override
-            public LinkedBindingBuilder<IoFilter> after(String filterName) {
+            public LinkedBindingBuilder<? extends IoFilter> after(String filterName) {
 
                 final int index = filterNameList.indexOf(filterName);
 
@@ -233,7 +233,7 @@ public abstract class MinaModule extends AbstractModule {
             }
 
             @Override
-            public LinkedBindingBuilder<IoFilter> before(String filterName) {
+            public LinkedBindingBuilder<? extends IoFilter> before(String filterName) {
 
                 final int index = filterNameList.indexOf(filterName);
 
@@ -247,7 +247,7 @@ public abstract class MinaModule extends AbstractModule {
             }
 
             @Override
-            public LinkedBindingBuilder<IoFilter> atAndOfFilterChain() {
+            public LinkedBindingBuilder<? extends IoFilter> atAndOfFilterChain() {
 
                 final int index = filterNameList.indexOf(filterName);
 
@@ -278,36 +278,6 @@ public abstract class MinaModule extends AbstractModule {
      */
     protected final void bindProtocolCodecFactory() {
         binder().bind(InjectProtocolCodecFactory.class);
-    }
-
-    /**
-     * Automatically binds the {@link InjectProtocolCodecFilter} to the context
-     * configuration.  You may bind it yourself, or call it manually.  It is
-     * not strictly necessary to bind this, but it makes life easier.
-     *
-     * The default name is the result of calilng {@link Class#getName()} ()} on
-     * {@link InjectProtocolCodecFilter#getClass()}
-     *
-     * @return an instance of {@link ScopedBindingBuilder}
-     *
-     */
-    protected final FilterSequenceBindingBuilder bindProtocolCodecFilter() {
-        final String protocolFilterName = InjectProtocolCodecFilter.class.toString();
-        return bindProtocolCodecFilter(protocolFilterName);
-    }
-
-    /**
-     * Automatically binds the {@link InjectProtocolCodecFilter} to the context
-     * configuration.  You may bind it yourself, or call it manually.  It is
-     * not strictly necessary to bind this, but it makes life easier.
-     *
-     * @param protocolFilterName the name of the protocol filter, if the default name is not acceptable
-     *
-     * @return an instance of {@link ScopedBindingBuilder}
-     *
-     */
-    protected final FilterSequenceBindingBuilder bindProtocolCodecFilter(final String protocolFilterName) {
-        return bindFilter().named(protocolFilterName);
     }
 
     /**
