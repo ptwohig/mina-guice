@@ -1,9 +1,5 @@
 package org.apache.mina.guice;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.*;
-
 /**
  * An exception type useful for collecting multiple causes of failure into a
  * single exception.  This type has the methods overridden to print all cuases
