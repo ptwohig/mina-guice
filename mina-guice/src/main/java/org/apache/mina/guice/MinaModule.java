@@ -1,6 +1,7 @@
 package org.apache.mina.guice;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.MembersInjector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.binder.LinkedBindingBuilder;
 import com.google.inject.matcher.AbstractMatcher;
@@ -42,7 +43,7 @@ public abstract class MinaModule extends AbstractModule {
 
     public static final String ORIGINAL_FILTER_SEQUENCE = "org.apache.mina.guice.MinaModule.ORIGINAL_FILTER_SEQUENCE";
 
-	private static final Matcher<Method> IO_FILTER_EXCEPTION_CAUGHT = 
+    private static final Matcher<Method> IO_FILTER_EXCEPTION_CAUGHT =
 		method("exceptionCaught", NextFilter.class, IoSession.class, Throwable.class); 
 
 	private static final Matcher<Method> IO_FILTER_FILTER_CLOSE = 
@@ -106,9 +107,8 @@ public abstract class MinaModule extends AbstractModule {
 			new AbstractMatcher<TypeLiteral<?>>() {
 
 		@Override
-		public boolean matches(TypeLiteral<?> t) {
-			System.out.println(t);
-			return TypeUtil.isLiteralAssignableFrom(IoAcceptor.class, t);
+		public boolean matches(final TypeLiteral<?> t) {
+			return IoAcceptor.class.isAssignableFrom(t.getRawType());
 		}
 
 	};
@@ -130,7 +130,7 @@ public abstract class MinaModule extends AbstractModule {
 		binder().bindListener(IO_ACCEPTOR_MATCHER, new TypeListener() {
 
             @Override
-            public <I> void hear(TypeLiteral<I> type, TypeEncounter<I> encounter) {
+            public <I> void hear(final TypeLiteral<I> type, final TypeEncounter<I> encounter) {
 
                 final Provider<IoHandler> ioHandler = encounter.getProvider(IoHandler.class);
                 final Provider<IoFilterChainBuilder> guiceIoFilterChainBuilder = encounter.getProvider(IoFilterChainBuilder.class);
@@ -352,9 +352,8 @@ public abstract class MinaModule extends AbstractModule {
 
 			@Override
 			public boolean matches(Method t) {
-				return 
-					t.getName().equals(name) &&
-					Arrays.deepEquals(types, t.getParameterTypes());
+				return t.getName().equals(name) &&
+					   Arrays.deepEquals(types, t.getParameterTypes());
 			}
 
 		};
