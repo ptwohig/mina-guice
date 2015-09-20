@@ -24,7 +24,7 @@ public class MinaScopes {
 
 		@Override
 		public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscoped) {
-            final IoSession
+
 			return new Provider<T>() {
 
 				@SuppressWarnings("unchecked")
